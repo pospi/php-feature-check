@@ -61,7 +61,7 @@
 	ob_clean();
 
 	if ($retVal !== null) {			// feature check returns a value
-		echo $retVal ? '1' : '0';
+		echo $hasWarnings ? '3' : ($retVal ? '1' : '0');
 	} else {						// nothing returned, and no error
 		echo $hasWarnings ? '3' : '4';
 	}
