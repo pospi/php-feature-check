@@ -5,3 +5,8 @@ FeatureCheck itself requires the following (fairly minimal) prerequisites:
 	* however prior to 4.0.1 warnings cannot be differentiated from fatal errors 
 * Not running in safe mode
 * Sockets enabled
+
+Known Issues
+------------
+When running requirement checks from CLI, any errors from the requirement checks 
+will be output before the final results list.

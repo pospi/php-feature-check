@@ -17,6 +17,34 @@ class FeatureChecker
 	var $INI_FILENAME = 'featurecheck.ini';
 	var $PHP_EXE = 'php';				// path to PHP executable
 
+	// array of output strings (for both HTML and text mode)
+	var $TEMPLATES = array(
+		'heading' => array(
+			'<h1>%s</h1>',
+			"\n%s\n",
+		),
+		'blockstart' => array(
+			'<ul>',
+			"",
+		),
+		'blockend' => array(
+			'</ul><p class="%s">%d/%d requirement checks passed</p>',
+			"\nRequirements %s (%d/%d passed)\n",
+		),
+		'categorystart' => array(
+			"<li><h2>%s</h2><ul>\n",
+			"    %s\n",
+		),
+		'categoryend' => array(
+			"</ul></li>\n",
+			"",
+		),
+		'line' => array(
+			"%5\$s<li class=\"err%4\$s %3\$s\">%1\$s &nbsp; [%2\$s]</li>\n",
+			"%5\$s%1\$s\t[%2\$s]\n",
+		),
+	);
+
 	var $checkerFiles = array();		// all INI filenames to parse & check
 
 	var $requirements = array();	// all requirement errors, descriptions etc.
@@ -99,7 +127,13 @@ class FeatureChecker
 				if ($inComments && preg_match('/^\s*#(.*)$/', $line, $matches)) {
 					$currDescription .= trim($matches[1] . ' ');
 				} else if ($inComments && preg_match('/^\s*(\w+)\s*=\s*(.+)\s*$/', $line, $matches)) {
-					$this->_storeRequirementValue($file, $currHeading, $matches[1], rtrim($matches[2]));
+					$metaValue = rtrim($matches[2]);
+					if ($metaValue == 'true') {
+						$metaValue = true;
+					} else if ($metaValue == 'false') {
+						$metaValue = false;
+					}
+					$this->_storeRequirementValue($file, $currHeading, $matches[1], $metaValue);
 				} else {
 					$inComments = false;
 					$currEval .= $line;
@@ -148,6 +182,108 @@ class FeatureChecker
 	}
 
 	//==========================================================================
+	//	Output & rendering
+
+	function getOutput()
+	{
+		$this->sortRequirements();
+
+		$output = '';
+		$checked = 0;
+		$passed = 0;
+
+		foreach ($this->requirements as $filename => $features)
+		{
+			$fileDir = dirname($filename);
+			$lastCategory = null;
+
+			$output .= $this->drawTemplateString('heading', array(dirname($filename)));
+			$output .= $this->drawTemplateString('blockstart');
+
+			foreach ($features as $name => $attrs) {
+				if (isset($attrs['category']) && $attrs['category'] != $lastCategory) {
+					if ($lastCategory !== null) {
+						$output .= $this->drawTemplateString('categoryend');
+					}
+					$output .= $this->drawTemplateString('categorystart', array($attrs['category']));
+					$lastCategory = $attrs['category'];
+				}
+
+				switch($attrs['error']) {
+					case 0:
+						$errorString = "Failed";
+						break;
+					case 2:
+						$errorString = "Failed due to error";
+						break;
+					case 3:
+						$errorString = "Warning";
+						if (isset($attrs['allowwarning']) && $attrs['allowwarning']) {
+							$passed++;
+							$errorString .= ", ok";
+						}
+						break;
+					case 4:
+						$errorString = "No result (did you forget a 'return'?)";
+						break;
+					default:
+						$errorString = "OK";
+						$passed++;
+						break;
+				}
+				if (isset($attrs['optional']) && $attrs['optional']) {
+					$errorString .= ", optional";
+				}
+
+				$output .= $this->drawTemplateString('line', array(
+					$name,
+					$errorString,
+					isset($attrs['optional']) && $attrs['optional'] ? 'optional' : '',
+					$attrs['error'],
+					isset($attrs['category']) ? '        ' : '    ',		// indentation for CLI
+				));
+
+				$checked++;
+			}
+
+			if ($lastCategory !== null) {
+				$output .= $this->drawTemplateString('categoryend');
+			}
+		}
+
+		return $output . $this->drawTemplateString('blockend', array($passed < $checked ? 'failed' : 'succeeded', $passed, $checked));
+	}
+
+	function sortRequirements()
+	{
+		ksort($this->requirements);
+
+		foreach ($this->requirements as $inifile => $features)
+		{
+			uasort($features, array($this, '_requirementsSort'));
+			$this->requirements[$inifile] = $features;
+		}
+	}
+
+	// callback for the above
+	function _requirementsSort($a, $b)
+	{
+		$cata = isset($a['category']) ? $a['category'] : '';
+		$catb = isset($b['category']) ? $b['category'] : '';
+
+	    if ($cata == $catb) {
+	        return 0;
+	    }
+	    return ($cata < $catb) ? -1 : 1;
+	}
+
+	function drawTemplateString($name, $params = array())
+	{
+		$i = $this->inCLI() ? 1 : 0;
+		return vsprintf($this->TEMPLATES[$name][$i], $params);
+	}
+
+	//==========================================================================
 	//	Util
 
 	// ensures that a directory path has a trailing slash
@@ -155,6 +291,11 @@ class FeatureChecker
 	{
 		$last = $dir[strlen($dir)-1];
 		return $last == '/' || $last == '\\' ? $dir : $dir . '/';
+	}
+
+	function inCLI()
+	{
+		return sizeof($_SERVER['argv']) > 0;
 	}
 }
 ?>

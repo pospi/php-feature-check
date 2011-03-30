@@ -1,0 +1,10 @@
+ body, html { font-family: tahoma, arial, sans-serif; font-size: 12px; }
+
+.failed { color: #F00; font-weight: bold; }
+.succeeded { color: #090; font-weight: bold; }
+
+li { font-weight: bold; }
+.err0, .err2 { color: #F00; }
+.err1 { color: #090; }
+.err3 { color: #F90; }
+.err4 { color: #999; }
