@@ -86,7 +86,10 @@ class FeatureChecker
 					$this->_storeRequirementValue($file, $currHeading, 'desc', $currDescription);
 					
 					$error = $this->_runRequirement($currEval);
-					$this->_storeRequirementValue($file, $currHeading, 'error', $error);
+					if ($error !== '0' && $error !== '1' && $error !== '2' && $error !== '3' && $error !== '4') {
+						$error = '2';	// any string echoed must mean we are running PHP4.0.0 and it's exploded
+					}
+					$this->_storeRequirementValue($file, $currHeading, 'error', intval($error));
 				}
 				$currHeading = $matches[1];
 				$inComments = true;
@@ -109,7 +112,10 @@ class FeatureChecker
 			$this->_storeRequirementValue($file, $currHeading, 'desc', $currDescription);
 			
 			$error = $this->_runRequirement($currEval);
-			$this->_storeRequirementValue($file, $currHeading, 'error', $error);
+			if ($error !== '0' && $error !== '1' && $error !== '2' && $error !== '3' && $error !== '4') {
+				$error = '2';	// any string echoed must mean we are running PHP4.0.0 and it's exploded
+			}
+			$this->_storeRequirementValue($file, $currHeading, 'error', intval($error));
 		}
 
 		fclose($fileHandle);
