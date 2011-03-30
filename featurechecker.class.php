@@ -234,12 +234,13 @@ class FeatureChecker
 				if (isset($attrs['optional']) && $attrs['optional']) {
 					$errorString .= ", optional";
 				}
+				$isOptional = isset($attrs['optional']) && $attrs['optional'];
 
 				$output .= $this->drawTemplateString('line', array(
 					$name,
 					$errorString,
-					isset($attrs['optional']) && $attrs['optional'] ? 'optional' : '',
-					$attrs['error'],
+					$isOptional ? 'optional' : '',
+					$isOptional && $attrs['error'] != 1 ? 3 : $attrs['error'],
 					isset($attrs['category']) ? '        ' : '    ',		// indentation for CLI
 					$attrs['error'] == 1 ? '' : $attrs['desc'],
 				));
