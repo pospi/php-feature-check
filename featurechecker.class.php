@@ -24,24 +24,24 @@ class FeatureChecker
 			"\n%s\n",
 		),
 		'blockstart' => array(
-			'<ul>',
+			'<table cellpadding="0" cellspacing="0"><tr class="head"><th>Requirement</th><th>Status</th><th>Error message</th></tr>',
 			"",
 		),
 		'blockend' => array(
-			'</ul><p class="%s">%d/%d requirement checks passed</p>',
+			'</table><p class="%s">%d/%d requirement checks passed</p>',
 			"\nRequirements %s (%d/%d passed)\n",
 		),
 		'categorystart' => array(
-			"<li><h2>%s</h2><ul>\n",
+			"<tr><th colspan=\"3\">Category: %s</th></tr>\n",
 			"    %s\n",
 		),
 		'categoryend' => array(
-			"</ul></li>\n",
+			"",
 			"",
 		),
 		'line' => array(
-			"%5\$s<li class=\"err%4\$s %3\$s\">%1\$s &nbsp; [%2\$s]</li>\n",
-			"%5\$s%1\$s\t[%2\$s]\n",
+			"<tr class=\"err%4\$s %3\$s\"><td>%1\$s</td><td>[%2\$s]</td><td>%6\$s</td></tr>\n",
+			"%5\$s%1\$s\t[%2\$s]\t%6\$s\n",
 		),
 	);
 
@@ -208,7 +208,7 @@ class FeatureChecker
 					$output .= $this->drawTemplateString('categorystart', array($attrs['category']));
 					$lastCategory = $attrs['category'];
 				}
-
+				
 				switch($attrs['error']) {
 					case 0:
 						$errorString = "Failed";
@@ -241,6 +241,7 @@ class FeatureChecker
 					isset($attrs['optional']) && $attrs['optional'] ? 'optional' : '',
 					$attrs['error'],
 					isset($attrs['category']) ? '        ' : '    ',		// indentation for CLI
+					$attrs['error'] == 1 ? '' : $attrs['desc'],
 				));
 
 				$checked++;

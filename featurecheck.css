@@ -3,7 +3,10 @@
 .failed { color: #F00; font-weight: bold; }
 .succeeded { color: #090; font-weight: bold; }
 
-li { font-weight: bold; }
+table, th, td { font-size: 1em; }
+td { font-weight: bold; padding: 0.1em 0.5em; }
+th { text-align: left; background: #EFEFEF; font-size: 1.2em; padding-left: 0.3em; }
+tr.head th { font-size: 1.3em; background: #FF7; padding: 0.2em 0.3em; }
 .err0, .err2 { color: #F00; }
 .err1 { color: #090; }
 .err3 { color: #F90; }
