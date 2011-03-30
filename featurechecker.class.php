@@ -32,8 +32,8 @@ class FeatureChecker
 			"\nRequirements %s (%d/%d passed)\n",
 		),
 		'categorystart' => array(
-			"<tr><th colspan=\"3\">Category: %s</th></tr>\n",
-			"    %s\n",
+			"<tr><th colspan=\"3\">%s: %s</th></tr>\n",
+			"    %s: %s\n",
 		),
 		'categoryend' => array(
 			"",
@@ -46,6 +46,7 @@ class FeatureChecker
 	);
 
 	var $checkerFiles = array();		// all INI filenames to parse & check
+	var $ORedCategories = array();
 
 	var $requirements = array();	// all requirement errors, descriptions etc.
 									// stored under filename & requirement name
@@ -102,6 +103,8 @@ class FeatureChecker
 		$currDescription = '';
 		$currEval = '';
 
+		$lastCategory = '';		// used to store 'anyincategory' parameter values
+
 		$fileHandle = fopen($file, 'r');
 
 		while(false !== $line = fgets($fileHandle)) {
@@ -133,7 +136,17 @@ class FeatureChecker
 					} else if ($metaValue == 'false') {
 						$metaValue = false;
 					}
-					$this->_storeRequirementValue($file, $currHeading, $matches[1], $metaValue);
+
+					// determine category ORness
+					if ($matches[1] == 'category') {
+						$lastCategory = $metaValue;
+					}
+
+					if ($matches[1] == 'anyincategory') {
+						$this->ORedCategories[$lastCategory] = false;
+					} else {
+						$this->_storeRequirementValue($file, $currHeading, $matches[1], $metaValue);
+					}
 				} else {
 					$inComments = false;
 					$currEval .= $line;
@@ -183,6 +196,7 @@ class FeatureChecker
 
 	//==========================================================================
 	//	Output & rendering
+	//		:TODO: do this a lot more cleanly
 
 	function getOutput()
 	{
@@ -195,7 +209,8 @@ class FeatureChecker
 		foreach ($this->requirements as $filename => $features)
 		{
 			$fileDir = dirname($filename);
-			$lastCategory = null;
+			$lastCategory = null;			// previous category being processed
+			$categoryIsOR = false;			// true if category should be considered as a single condition
 
 			$output .= $this->drawTemplateString('heading', array(dirname($filename)));
 			$output .= $this->drawTemplateString('blockstart');
@@ -204,8 +219,19 @@ class FeatureChecker
 				if (isset($attrs['category']) && $attrs['category'] != $lastCategory) {
 					if ($lastCategory !== null) {
 						$output .= $this->drawTemplateString('categoryend');
+						if ($categoryIsOR && $this->ORedCategories[$lastCategory]) {
+							$passed++;
+						}
 					}
-					$output .= $this->drawTemplateString('categorystart', array($attrs['category']));
+
+					if (isset($this->ORedCategories[$attrs['category']])) {
+						$categoryIsOR = true;
+						$checked++;
+					} else {
+						$categoryIsOR = false;
+					}
+
+					$output .= $this->drawTemplateString('categorystart', array($attrs['category'], $categoryIsOR ? ' one must pass' : ' all must pass'));
 					$lastCategory = $attrs['category'];
 				}
 				
@@ -219,7 +245,11 @@ class FeatureChecker
 					case 3:
 						$errorString = "Warning";
 						if (isset($attrs['allowwarning']) && $attrs['allowwarning']) {
-							$passed++;
+							if (!$categoryIsOR) {
+								$passed++;
+							} else {
+								$this->ORedCategories[$lastCategory] = true;
+							}
 							$errorString .= ", ok";
 						}
 						break;
@@ -228,7 +258,11 @@ class FeatureChecker
 						break;
 					default:
 						$errorString = "OK";
-						$passed++;
+						if (!$categoryIsOR) {
+							$passed++;
+						} else {
+							$this->ORedCategories[$lastCategory] = true;
+						}
 						break;
 				}
 				if (isset($attrs['optional']) && $attrs['optional']) {
@@ -244,12 +278,17 @@ class FeatureChecker
 					isset($attrs['category']) ? '        ' : '    ',		// indentation for CLI
 					$attrs['error'] == 1 ? '' : $attrs['desc'],
 				));
-
-				$checked++;
+				
+				if (!$categoryIsOR) {
+					$checked++;
+				}
 			}
 
 			if ($lastCategory !== null) {
 				$output .= $this->drawTemplateString('categoryend');
+				if ($categoryIsOR && $this->ORedCategories[$lastCategory]) {
+					$passed++;
+				}
 			}
 		}
 
