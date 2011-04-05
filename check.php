@@ -22,10 +22,10 @@
 
 	if (FeatureChecker::inCLI()) {
 		$path = $_SERVER['argv'][1];
-	} else if (isset($_GET['project'])) {
-		$path = $_GET['project'];
+	} else if (isset($_GET['path'])) {
+		$path = $_GET['path'];
 	} else {
-		die("Project directory not specified.\n");
+		die("Project directory not specified (command line parameter or \$_GET['path']).\n");
 	}
 	
 	// Simply create an instance of FeatureChecker to check a project's
