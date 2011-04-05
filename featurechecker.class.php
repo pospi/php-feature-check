@@ -338,5 +338,27 @@ class FeatureChecker
 	{
 		return sizeof($_SERVER['argv']) > 0;
 	}
+	
+	//========================================================================================
+	// These are helper functions for feature detection. Since this class is always loaded
+	// when parsing your INI files, you may call these methods statically if desired.
+	
+	static function SPLInterfaceExists($name, $onlyClasses = false)
+	{
+	    if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
+	        return true;
+	    } else if (version_compare(PHP_VERSION, '5.0.0', '<')) {
+	        return false;
+	    } else if ($onlyClasses || version_compare(PHP_VERSION, '5.0.1', '<=')) {
+	        return class_exists($name);
+	    } else {
+	        return interface_exists($name);
+	    }
+	}
+	
+	static function SPLClassExists($name)
+	{
+		return FeatureChecker::SPLInterfaceExists($name, true);
+	}
 }
 ?>

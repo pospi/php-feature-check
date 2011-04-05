@@ -53,6 +53,8 @@
 
 	// now, execute it
 	$eval = $_SERVER['argv'][1];
+	
+ 	require_once('featurechecker.class.php');
 
 	ob_start();
 	$evalDone = false;
