@@ -60,11 +60,11 @@
 	$evalDone = false;
 	$retVal = eval($eval);
 	$evalDone = true;
-	ob_clean();
+	$caughtOutput = ob_get_clean();
 
 	if ($retVal !== null) {			// feature check returns a value
 		echo $hasWarnings ? '3' : ($retVal ? '1' : '0');
 	} else {						// nothing returned, and no error
-		echo $hasWarnings ? '3' : '4';
+		echo ($hasWarnings || !strlen($caughtOutput)) ? '3' : '4';
 	}
 ?>
