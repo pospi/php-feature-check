@@ -355,10 +355,25 @@ class FeatureChecker
 	        return interface_exists($name);
 	    }
 	}
-	
+
 	static function SPLClassExists($name)
 	{
 		return FeatureChecker::SPLInterfaceExists($name, true);
+	}
+
+	static function ProgramInstalled($executableName)
+	{
+		$command = 'which ' . escapeshellarg($executableName);
+		$fork = popen($command, 'r');
+
+		$output = '';
+		while (!feof($fork)) {
+			$output .= fread($fork, 1024);
+		}
+
+		pclose($fork);
+
+		return $output ? true : false;
 	}
 }
 ?>
