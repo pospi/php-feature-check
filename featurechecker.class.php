@@ -115,7 +115,7 @@ class FeatureChecker
 				if (isset($currHeading)) {
 					// finish off the old heading first, by storing its values
 					$this->_storeRequirementValue($file, $currHeading, 'desc', $currDescription);
-					
+
 					$error = $this->_runRequirement($currEval);
 					if ($error !== '0' && $error !== '1' && $error !== '2' && $error !== '3' && $error !== '4') {
 						$error = '2';	// any string echoed must mean we are running PHP4.0.0 and it's exploded
@@ -153,11 +153,11 @@ class FeatureChecker
 				}
 			}
 		}
-			
+
 		// also process the last heading
 		if (isset($currHeading)) {
 			$this->_storeRequirementValue($file, $currHeading, 'desc', $currDescription);
-			
+
 			$error = $this->_runRequirement($currEval);
 			if ($error !== '0' && $error !== '1' && $error !== '2' && $error !== '3' && $error !== '4') {
 				$error = '2';	// any string echoed must mean we are running PHP4.0.0 and it's exploded
@@ -234,7 +234,7 @@ class FeatureChecker
 					$output .= $this->drawTemplateString('categorystart', array($attrs['category'], $categoryIsOR ? ' one must pass' : ' all must pass'));
 					$lastCategory = $attrs['category'];
 				}
-				
+
 				switch($attrs['error']) {
 					case 0:
 						$errorString = "Failed";
@@ -278,7 +278,7 @@ class FeatureChecker
 					isset($attrs['category']) ? '        ' : '    ',		// indentation for CLI
 					$attrs['error'] == 1 ? '' : $attrs['desc'],
 				));
-				
+
 				if (!$categoryIsOR) {
 					$checked++;
 				}
@@ -336,13 +336,13 @@ class FeatureChecker
 
 	function inCLI()
 	{
-		return sizeof($_SERVER['argv']) > 0;
+		return isset($_SERVER['argv']) && sizeof($_SERVER['argv']) > 0;
 	}
-	
+
 	//========================================================================================
 	// These are helper functions for feature detection. Since this class is always loaded
 	// when parsing your INI files, you may call these methods statically if desired.
-	
+
 	static function SPLInterfaceExists($name, $onlyClasses = false)
 	{
 	    if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
