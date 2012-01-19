@@ -51,10 +51,10 @@ class FeatureChecker
 	var $requirements = array();	// all requirement errors, descriptions etc.
 									// stored under filename & requirement name
 
-	function FeatureChecker($dir = null)
+	function FeatureChecker($dir = null, $recurse = true)
 	{
 		if (isset($dir)) {
-			$this->getFeatureCheckFiles($dir);
+			$this->getFeatureCheckFiles($dir, $recurse);
 			$this->processRequirements();
 		}
 	}
@@ -63,7 +63,7 @@ class FeatureChecker
 	//	Directory traversal. Reads all feature INI files recursively, to
 	//	load requirements for top-level project and any dependencies.
 
-	function getFeatureCheckFiles($dir)
+	function getFeatureCheckFiles($dir, $recurse = true)
 	{
 		$dir = $this->_fixDir($dir);
 
@@ -75,7 +75,7 @@ class FeatureChecker
 		while (($file = readdir($dh)) !== false) {
 			if($file == $this->INI_FILENAME) {
 				$this->checkerFiles[] = $dir . $file;
-			} else if ($file != '.' && $file != '..' && is_dir($dir . $file)) {
+			} else if ($recurse && $file != '.' && $file != '..' && is_dir($dir . $file)) {
 				$this->getFeatureCheckFiles($dir . $file);
 			}
 		}
