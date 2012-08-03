@@ -51,12 +51,23 @@ class FeatureChecker
 	var $requirements = array();	// all requirement errors, descriptions etc.
 									// stored under filename & requirement name
 
+	// error handling - either ignore missing paths (default), or exit the current script
+	var $abortOnError = false;
+	var $sourcePath;
+
 	function FeatureChecker($dir = null, $recurse = true)
 	{
+		$this->sourcePath = $dir;
+
 		if (isset($dir)) {
 			$this->getFeatureCheckFiles($dir, $recurse);
 			$this->processRequirements();
 		}
+	}
+
+	function setAbortOnErrors($abort = true)
+	{
+		$this->abortOnError = $abort;
 	}
 
 	//==========================================================================
@@ -69,6 +80,10 @@ class FeatureChecker
 
 		$dh = @opendir($dir);
 		if (!$dh) {
+			if ($this->abortOnError) {
+				echo "Source directory '{$this->sourcePath}' not found! Aborting.";
+				exit(1);
+			}
 			return false;
 		}
 
@@ -89,8 +104,11 @@ class FeatureChecker
 
 	function processRequirements()
 	{
-		foreach ($this->checkerFiles as $file)
-		{
+		if ($this->abortOnError && !count($this->checkerFiles)) {
+			echo "No featurecheck.ini files found in {$this->sourcePath}! Aborting.";
+			exit(1);
+		}
+		foreach ($this->checkerFiles as $file) {
 			$this->checkRequirementINI($file);
 		}
 	}

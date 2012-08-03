@@ -2,7 +2,7 @@
  /*===============================================================================
 	PHP Feature Checker - main script
 	----------------------------------------------------------------------------
-	This script will recursively churn through a directory, finding all 
+	This script will recursively churn through a directory, finding all
 	PHPFeatureCheck INI files. These are then evaluated and a report generated.
 	This script can be run from either CLI or a normal webpage.
 
@@ -27,11 +27,12 @@
 	} else {
 		die("Project directory not specified (command line parameter or \$_GET['path']).\n");
 	}
-	
+
 	// Simply create an instance of FeatureChecker to check a project's
 	// directory recursively.
 	// All featurecheck.ini files under this directory will be parsed
 	$chk = new FeatureChecker($path);
+	$chk->setAbortOnErrors();
 
 	if (!FeatureChecker::inCLI()) {
 ?>
