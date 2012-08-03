@@ -336,7 +336,7 @@ class FeatureChecker
 
 	function inCLI()
 	{
-		return isset($_SERVER['argv']) && sizeof($_SERVER['argv']) > 0;
+		return PHP_SAPI == 'cli' || (substr(PHP_SAPI, 0, 3) == 'cgi' && empty($_SERVER['REQUEST_URI']));
 	}
 
 	//========================================================================================
