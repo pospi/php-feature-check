@@ -393,5 +393,23 @@ class FeatureChecker
 
 		return $output ? true : false;
 	}
+
+	static $DISABLED_FUNCTIONS;
+
+	static function functionEnabled($fnName)
+	{
+		if (!function_exists($fnName)) {
+			return false;
+		}
+		if (!isset(self::$DISABLED_FUNCTIONS)) {
+			self::$DISABLED_FUNCTIONS = explode(', ', ini_get('disable_functions'));
+		}
+		return !in_array($fnName, self::$DISABLED_FUNCTIONS);
+	}
+
+	static function canExecShellCommands()
+	{
+		return self::functionEnabled('exec') && self::functionEnabled('shell_exec') && self::functionEnabled('escapeshellarg');
+	}
 }
 ?>
