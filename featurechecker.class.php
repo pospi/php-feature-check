@@ -409,7 +409,12 @@ class FeatureChecker
 
 	static function canExecShellCommands()
 	{
-		return self::functionEnabled('exec') && self::functionEnabled('shell_exec') && self::functionEnabled('escapeshellarg');
+		return self::functionEnabled('exec') && self::functionEnabled('shell_exec') && self::functionEnabled('passthru') && self::functionEnabled('system') && self::functionEnabled('escapeshellarg');
+	}
+
+	static function canExecProcesses()
+	{
+		return self::functionEnabled('proc_open') && self::functionEnabled('escapeshellarg');
 	}
 }
 ?>
